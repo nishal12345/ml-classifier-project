@@ -1,0 +1,40 @@
+import pandas as pd
+import numpy as np
+import seaborn as sns
+from sklearn.model_selection import train_test_split
+from sklearn.preprocessing import LabelEncoder
+from sklearn.ensemble import RandomForestClassifier
+from sklearn.linear_model import LogisticRegression
+from xgboost import XGBClassifier
+from sklearn.metrics import accuracy_score, f1_score, confusion_matrix
+
+# Load dataset
+df = sns.load_dataset('titanic')
+df = df[['survived', 'pclass', 'sex', 'age', 'fare', 'embarked']].dropna()
+
+# Encode categorical features
+df['sex'] = LabelEncoder().fit_transform(df['sex'])
+df['embarked'] = LabelEncoder().fit_transform(df['embarked'])
+
+# Features and target
+X = df.drop('survived', axis=1)
+y = df['survived']
+
+# Split data
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
+
+# Models
+models = {
+    'Logistic Regression': LogisticRegression(),
+    'Random Forest': RandomForestClassifier(),
+    'XGBoost': XGBClassifier(use_label_encoder=False, eval_metric='logloss')
+}
+
+# Training and evaluation
+for name, model in models.items():
+    model.fit(X_train, y_train)
+    preds = model.predict(X_test)
+    print(f"\n{name}")
+    print("Accuracy:", accuracy_score(y_test, preds))
+    print("F1 Score:", f1_score(y_test, preds))
+    print("Confusion Matrix:\n", confusion_matrix(y_test, preds))
